@@ -17,7 +17,7 @@ header {
 	text-align: center;
     padding-top:57px;
     min-height:725px;
-	background-image: url('/images/headerbg.jpeg');
+ background-image:url("https://theocahill.github.io/Kiwi-Collective-Website.github.io/images/headerbg.jpeg");
     text-shadow:rgb(255, 255, 255) 1px 1px 0px, rgb(170, 170, 170) 2px 2px 0px !important;
 }
 
