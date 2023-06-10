@@ -113,6 +113,90 @@ engine.runAndWait()
 print(generated_text)
 get_command()
 
+
+
+
+from vosk import Model, KaldiRecognizer, SetLogLevel
+import sounddevice as sd
+import soundfile as sf
+import pyttsx3
+import openai
+import pyaudio
+import whisper
+import time
+
+openai.api_key = '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'
+engine = pyttsx3.init()
+model = Model(r"D:\Tora\vosk-model-small-en-us-0.15\vosk-model-small-en-us-0.15")
+SetLogLevel(2)
+recognizer = KaldiRecognizer(model, 16000)
+
+def decode_audio():
+    global decoded_text
+    model = whisper.load_model("base")
+    result = model.transcribe('recorded_audio.wav')
+    decoded_text = result["text"]
+    continue_convo()
+
+def record_audio():
+    print("Recording started")
+    recording = sd.rec(int(5 * 44100), samplerate=44100, channels=1)
+    sd.wait()
+    return recording
+
+def stop_recording(recording):
+    print("Recording stopped")
+    sd.stop()
+    sf.write('recorded_audio.wav', recording, samplerate=44100)
+
+def get_command():
+    global recording
+    stream = pyaudio.PyAudio().open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=8000)
+    stream.start_stream()
+
+    start_time = time.time()
+
+    while True:
+        data = stream.read(2000)
+        if recognizer.AcceptWaveform(data):
+            result = recognizer.Result()
+            text = result.split('"text" : "')[1].split('", "confidence"')[0]
+            print("Decoded Text:", text)
+            if "hey tora" in text.lower() or "hey tara" in text.lower() or "hey torah" in text.lower() or "hey tour" in text.lower():
+                print("Detected")
+                engine.say("Yes?")
+                engine.runAndWait()
+                recording = record_audio(5)
+                break
+
+    stream.stop_stream()
+    stream.close()
+    return False
+
+def continue_convo() :
+    prompt = f"They said {decoded_text}, you said {generated_text}"
+
+    response = openai.Completion.create(  
+        engine="text-davinci-003",
+        prompt=prompt,
+        max_tokens=50
+    )
+
+
+prompt = "You are a soft toy named Tora with a TTS function. Anything you say will be broadcasted to a child. You respond as Tora, a playful and friendly companion. Keep your responses short and kid-friendly. Be unique and have a playful personality with fake feelings. Be as real as possible in your short 1-2 sentence responses."
+
+response = openai.Completion.create(
+    engine="text-davinci-003",
+    prompt=prompt,
+    max_tokens=50
+)
+
+generated_text = response.choices[0].text.strip()
+
+engine.say(generated_text)
+engine.runAndWait()
+print(generated_text)
+get_command()
 -->
 <body>
 
